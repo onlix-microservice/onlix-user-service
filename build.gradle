@@ -30,6 +30,12 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    /** MySql **/
+    runtimeOnly 'com.mysql:mysql-connector-j:8.2.0'
+
+    /** JPA **/
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
     /** JWT **/
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
@@ -40,6 +46,10 @@ dependencies {
 
     /** lombok **/
     compileOnly 'org.projectlombok:lombok'
+
+    /** Json Format **/
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

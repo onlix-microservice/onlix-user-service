@@ -15,14 +15,14 @@ public class RedisService {
     }
 
     public void saveRefreshToken(String username, String refreshToken, long duration) {
-        redisTemplate.opsForValue().set("RT:" + username, refreshToken, duration, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set("onlyonce-user-RT:" + username, refreshToken, duration, TimeUnit.MILLISECONDS);
     }
 
     public String getRefreshToken(String username) {
-        return redisTemplate.opsForValue().get("RT:" + username);
+        return redisTemplate.opsForValue().get("onlyonce-user-RT:" + username);
     }
 
     public void deleteRefreshToken(String username) {
-        redisTemplate.delete("RT:" + username);
+        redisTemplate.delete("onlyonce-user-RT:" + username);
     }
 }
