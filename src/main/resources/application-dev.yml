@@ -15,6 +15,9 @@ spring:
 jwt:
   access-token-expire-time: 3600000    # 1시간
   refresh-token-expire-time: 604800000 # 7일
+
+cors:
+  allowed-origins: "http://localhost:3000"
 #logging:
 #  level:
 #    root: INFO

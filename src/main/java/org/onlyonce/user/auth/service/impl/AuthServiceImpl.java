@@ -1,11 +1,13 @@
 package org.onlyonce.user.auth.service.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.onlyonce.user.account.domain.entity.AccountEntity;
 import org.onlyonce.user.account.domain.repository.AccountRepository;
 import org.onlyonce.user.account.exception.AccountCustomErrorCode;
 import org.onlyonce.user.account.exception.AccountCustomException;
 import org.onlyonce.user.auth.dto.JwtResponseDto;
+import org.onlyonce.user.auth.dto.LoginRequestDto;
 import org.onlyonce.user.auth.exception.JwtAuthenticationCustomErrorCode;
 import org.onlyonce.user.auth.exception.JwtAuthenticationCustomException;
 import org.onlyonce.user.auth.service.AuthService;
@@ -39,7 +41,10 @@ public class AuthServiceImpl implements AuthService {
 
     // 회원가입
     @Transactional
-    public void signin(String loginId, String password) {
+    public void signin(LoginRequestDto loginRequestDto) {
+        String loginId = loginRequestDto.loginId();
+        String password = loginRequestDto.password();
+
         if (accountRepository.findByLoginId(loginId).isPresent()) {
             throw new IllegalStateException("이미 가입된 회원입니다.");
         }
@@ -52,7 +57,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 로그인
-    public JwtResponseDto login(String loginId, String password) {
+    public JwtResponseDto login(LoginRequestDto loginRequestDto) {
+        String loginId = loginRequestDto.loginId();
+        String password = loginRequestDto.password();
+        String deviceId = loginRequestDto.deviceId();
 
         try {
          // 입력한 계정 정보로 AuthenticationToken 생성
@@ -69,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
             String refreshToken = jwtProvider.generateRefreshToken(userDetails.getUsername());
 
             // RefreshToken Redis 저장(TTL : 7일)
-            redisService.saveRefreshToken(loginId, refreshToken, jwtProvider.getRefreshTokenExpireTime());
+            redisService.saveRefreshToken(loginId, deviceId, refreshToken, jwtProvider.getRefreshTokenExpireTime());
 
             return JwtResponseDto.builder()
                     .accessToken(accessToken)
@@ -88,11 +96,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 토큰 리프레쉬
-    public JwtResponseDto refresh(String loginId, String refreshToken) {
-        String savedToken = redisService.getRefreshToken(loginId);
-        if (savedToken == null || !savedToken.equals(refreshToken)) {
+    public JwtResponseDto refresh(HttpServletRequest request) {
+//        String savedToken = redisService.getRefreshToken(loginId, deviceId);
+        String refreshToken = jwtProvider.resolveRefreshToken(request);
+        String userKey = redisService.getUserKeyByRefreshToken(refreshToken);
+
+        if (refreshToken == null || userKey == null) {
             throw new JwtAuthenticationCustomException(JwtAuthenticationCustomErrorCode.INVALID_REFRESH_TOKEN);
         }
+
+        String loginId = userKey.split(":")[0];
 
         AccountEntity account = accountRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -110,7 +123,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 로그아웃
-    public void logout(String loginId) {
-        redisService.deleteRefreshToken(loginId);
+    public void logout(HttpServletRequest request) {
+        String refreshToken = jwtProvider.resolveRefreshToken(request);
+        redisService.deleteByRefreshToken(refreshToken);
     }
 }

@@ -1,6 +1,7 @@
 package org.onlyonce.user.core.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,6 +30,9 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtProvider jwtProvider;
 
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
+
     /** Bcrypt Password Encoder **/
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,13 +55,13 @@ public class SecurityConfig {
 
     /**
      * CORS 설정을 위한 Bean 등록
-     * - 프론트엔드(React 등)에서 API 요청 시 CORS 문제 해결
+     * - 프론트엔드에서 API 요청 시 CORS 문제 해결
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 허용할 도메인
+            configuration.setAllowedOrigins(Collections.singletonList(allowedOrigins)); // 허용할 도메인
             configuration.setAllowedMethods(Collections.singletonList("*")); // 모든 HTTP 메서드 허용
             configuration.setAllowCredentials(true); // 인증 정보 포함 허용
             configuration.setAllowedHeaders(Collections.singletonList("*")); // 모든 헤더 허용
@@ -70,7 +74,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-//                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
@@ -83,8 +87,8 @@ public class SecurityConfig {
                 // 인가 규칙
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/error").permitAll()
-                        .requestMatchers("/auth/signin", "/auth/login", "/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/auth/user").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/signin", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/user").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 // JWT 필터 등록

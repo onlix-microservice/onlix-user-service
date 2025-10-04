@@ -1,11 +1,13 @@
 package org.onlyonce.user.auth.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.onlyonce.user.auth.dto.JwtResponseDto;
+import org.onlyonce.user.auth.dto.LoginRequestDto;
 
 public interface AuthService {
-    void signin(String loginId, String password);
-    void logout(String loginId);
-    JwtResponseDto login(String loginId, String password);
-    JwtResponseDto refresh(String loginId, String refreshToken);
+    void signin(LoginRequestDto loginRequestDto);
+    JwtResponseDto login(LoginRequestDto loginRequestDto);
+    JwtResponseDto refresh(HttpServletRequest request);
+    void logout(HttpServletRequest request);
 
 }

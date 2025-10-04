@@ -5,6 +5,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import org.onlyonce.user.account.enums.Role;
 import org.onlyonce.user.account.enums.Status;
@@ -77,5 +79,16 @@ public class JwtProvider {
 
         CustomUserDetails principal = new CustomUserDetails(claims.getSubject(), "", authorities, Status.ACTIVE);
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    }
+
+    public String resolveRefreshToken(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }
