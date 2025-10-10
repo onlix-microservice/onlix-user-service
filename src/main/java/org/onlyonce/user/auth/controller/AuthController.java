@@ -5,12 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.onlyonce.user.auth.dto.JwtResponseDto;
 import org.onlyonce.user.auth.dto.LoginRequestDto;
 import org.onlyonce.user.auth.service.AuthService;
+import org.onlyonce.user.core.security.CustomUserDetails;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,6 +20,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    @GetMapping("/me")
+    public ResponseEntity<?> checkAuth(@AuthenticationPrincipal CustomUserDetails user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("authenticated", false, "message", "Unauthorized"));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "authenticated", true,
+                "loginId", user.getUsername(),
+                "role", user.getAuthorities()
+        ));
+    }
 
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequestDto loginRequestDto) {
@@ -46,10 +62,10 @@ public class AuthController {
                 .maxAge(jwtResponseDto.refreshExpiresIn())
                 .build();
 
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok()
                 .header("Set-Cookie", accessCookie.toString())
                 .header("Set-Cookie", refreshCookie.toString())
-                .build();
+                .body(jwtResponseDto.loginInfo());
     }
 
     // AccessToken 재발행

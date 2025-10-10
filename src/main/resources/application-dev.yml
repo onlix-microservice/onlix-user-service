@@ -13,7 +13,7 @@ spring:
       timeout: 60000 # ms
 
 jwt:
-  access-token-expire-time: 3600000    # 1시간
+  access-token-expire-time: 900000    # 15분
   refresh-token-expire-time: 604800000 # 7일
 
 cors:

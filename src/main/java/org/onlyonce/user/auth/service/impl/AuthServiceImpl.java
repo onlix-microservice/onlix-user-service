@@ -8,6 +8,7 @@ import org.onlyonce.user.account.exception.AccountCustomErrorCode;
 import org.onlyonce.user.account.exception.AccountCustomException;
 import org.onlyonce.user.auth.dto.JwtResponseDto;
 import org.onlyonce.user.auth.dto.LoginRequestDto;
+import org.onlyonce.user.auth.dto.LoginResponseDto;
 import org.onlyonce.user.auth.exception.JwtAuthenticationCustomErrorCode;
 import org.onlyonce.user.auth.exception.JwtAuthenticationCustomException;
 import org.onlyonce.user.auth.service.AuthService;
@@ -27,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -79,12 +81,15 @@ public class AuthServiceImpl implements AuthService {
             // RefreshToken Redis 저장(TTL : 7일)
             redisService.saveRefreshToken(loginId, deviceId, refreshToken, jwtProvider.getRefreshTokenExpireTime());
 
+            LoginResponseDto loginInfo = LoginResponseDto.fromUserDetails(userDetails);
+
             return JwtResponseDto.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .tokenType("Bearer")
                     .expiresIn(jwtProvider.getAccessTokenExpireTime() / 1000)
                     .refreshExpiresIn(jwtProvider.getRefreshTokenExpireTime() / 1000)
+                    .loginInfo(loginInfo)
                     .build();
         } catch (BadCredentialsException dex) {
             throw new AccountCustomException(AccountCustomErrorCode.BAD_CREDENTIALS);
@@ -97,7 +102,6 @@ public class AuthServiceImpl implements AuthService {
 
     // 토큰 리프레쉬
     public JwtResponseDto refresh(HttpServletRequest request) {
-//        String savedToken = redisService.getRefreshToken(loginId, deviceId);
         String refreshToken = jwtProvider.resolveRefreshToken(request);
         String userKey = redisService.getUserKeyByRefreshToken(refreshToken);
 

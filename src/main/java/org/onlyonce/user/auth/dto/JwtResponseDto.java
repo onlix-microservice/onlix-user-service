@@ -8,6 +8,7 @@ public record JwtResponseDto(
     String refreshToken,
     String tokenType,
     long expiresIn,
-    long refreshExpiresIn
+    long refreshExpiresIn,
+    LoginResponseDto loginInfo
 ) {
 }
