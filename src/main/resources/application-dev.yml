@@ -12,6 +12,12 @@ spring:
       port: ${REDIS_PORT}
       timeout: 60000 # ms
 
+jwt:
+  access-token-expire-time: 900000    # 15분
+  refresh-token-expire-time: 604800000 # 7일
+
+cors:
+  allowed-origins: "http://localhost:3000"
 #logging:
 #  level:
 #    root: INFO

@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class OnlyonceUserApplication {
+public class OnlixUserApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(OnlyonceUserApplication.class, args);
+        SpringApplication.run(OnlixUserApplication.class, args);
     }
 
 }
