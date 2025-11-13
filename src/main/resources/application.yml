@@ -1,2 +1,13 @@
 server:
-  port: 8081
+  port: 8080
+  error:
+    whitelabel:
+      enabled: false
+    include-message: never
+    include-binding-errors: never
+
+spring:
+  profiles:
+    active: dev
+  jpa:
+    open-in-view: false
