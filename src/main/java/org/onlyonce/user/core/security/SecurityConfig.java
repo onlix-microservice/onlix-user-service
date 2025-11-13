@@ -86,8 +86,8 @@ public class SecurityConfig {
                 )
                 // 인가 규칙
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/error").permitAll()
-                        .requestMatchers("/api/auth/signin", "/api/auth/login", "/api/auth/me", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/user/auth/signin", "/api/user/auth/login", "/api/user/auth/me", "/api/user/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/auth/user").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

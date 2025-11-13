@@ -1,30 +1,15 @@
-services:
-  mysql:
-    image: mysql:8.0
-    container_name: user-mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${USER_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    ports:
-      - "3306:3306"
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - /data/mysql:/var/lib/mysql
+networks:
+  onlix:
+    external: true
 
-  # user-service:
-  #   image: openjdk:21-jdk
-  #   container_name: user-service
-  #   volumes:
-  #     - ./build/libs:/app
-  #   working_dir: /app
-  #   command: ["java", "-Dspring.profiles.active=dev", "-jar", "onlyonce-user.jar"]
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${USER_DB}
-  #     SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
-  #     SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-  #   depends_on:
-  #     - mysql
-  #   ports:
-  #     - "8081:8080"
+services:
+  user-service:
+    build: .
+    image: user-service:dev
+    container_name: onlix-user-service
+    env_file:
+      - ./dev.env
+    ports:
+      - "8081:8080"
+    networks: 
+      - onlix    
