@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.onlix.user.auth.dto.JwtResponse;
 import org.onlix.user.auth.dto.LoginRequest;
 import org.onlix.user.auth.service.AuthService;
+import org.onlix.user.core.dto.ApiResponse;
 import org.onlix.user.core.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -28,18 +29,20 @@ public class AuthController {
                     .body(Map.of("authenticated", false, "message", "Unauthorized"));
         }
 
-        return ResponseEntity.ok(Map.of(
+        Map<String, Object> data = Map.of(
                 "authenticated", true,
                 "loginId", user.getUsername(),
                 "role", user.getAuthorities()
-        ));
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(data));
     }
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> signin(@RequestBody LoginRequest loginRequestDto) {
+    @PostMapping("/signup")
+    public ResponseEntity<?> signUp(@RequestBody LoginRequest loginRequestDto) {
         authService.signin(loginRequestDto);
 
-        return ResponseEntity.ok("회원가입 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
     }
 
     @PostMapping("/login")
@@ -65,7 +68,7 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header("Set-Cookie", accessCookie.toString())
                 .header("Set-Cookie", refreshCookie.toString())
-                .body(jwtResponseDto.loginInfo());
+                .body(ApiResponse.success(jwtResponseDto.loginInfo()));
     }
 
     // AccessToken 재발행
@@ -81,9 +84,10 @@ public class AuthController {
                 .maxAge(jwtResponseDto.expiresIn())
                 .build();
 
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok()
                 .header("Set-Cookie", accessCookie.toString())
-                .build();
+                .body(ApiResponse.success(null));
+
     }
 
     @PostMapping("/logout")
@@ -104,10 +108,10 @@ public class AuthController {
                 .maxAge(0)
                 .build();
 
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok()
                 .header("Set-Cookie", deleteAccess.toString())
                 .header("Set-Cookie", deleteRefresh.toString())
-                .build();
+                .body(ApiResponse.success(null));
     }
 
     @PostMapping("/admin")
