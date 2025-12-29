@@ -3,7 +3,6 @@ package org.onlix.user.core.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +25,11 @@ import java.util.stream.Collectors;
 @Component
 @Getter
 public class JwtProvider {
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final Key key;
+
+    public JwtProvider(@Value("${jwt.secret}") String secret) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     @Value("${jwt.access-token-expire-time}")
     private long accessTokenExpireTime;
@@ -39,6 +43,7 @@ public class JwtProvider {
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()
+                .setIssuer("onlix-auth")
                 .setSubject(username)
                 .claim("auth", roles)
                 .setIssuedAt(new Date())
@@ -49,6 +54,7 @@ public class JwtProvider {
 
     public String generateRefreshToken(String username) {
         return Jwts.builder()
+                .setIssuer("onlix-auth")
                 .setSubject(username)
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpireTime)) // 7일
                 .signWith(key)

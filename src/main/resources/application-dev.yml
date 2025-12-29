@@ -17,6 +17,7 @@ spring:
 jwt:
   access-token-expire-time: 900000    # 15분
   refresh-token-expire-time: 604800000 # 7일
+  secret: ${JWT_SECRET_KEY}
 
 cors:
   allowed-origins: "http://localhost:3000"
@@ -27,9 +28,6 @@ cors:
 #      springframework: INFO
 #      mybatis: INFO
 #      hibernate: ERROR
-#    com:
-#      labg:
-#        sfa: INFO
 #      zaxxer:
 #        hikari: OFF
 #    javax:
